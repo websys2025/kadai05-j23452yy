@@ -14,8 +14,33 @@
     <script>
         async function some_api(myForm) {
             // ここにコードを書く
-            document.getElementById("result").innerHTML += myForm.form_data.value+"<br />";
-            document.apiform.reset();
+            const keyword = myForm.form_data.value;
+            const endpoint = "https://ja.wikipedia.org/w/api.php";
+            const url = `${endpoint}?action=query&format=json&origin=*&list=search&srsearch=${encodeURIComponent(keyword)}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                const results = data.query.search;
+                let html = `<h2>「${keyword}」の検索結果：</h2><ul>`;
+
+                if (results.length > 0) {
+                    results.forEach(item => {
+                        html += `<li><strong>${item.title}</strong><br>${item.snippet}...</li>`;
+                    });
+                    html += "</ul>";
+                } else {
+                    html += "<li>該当するページが見つかりませんでした。</li></ul>";
+                }
+
+                document.getElementById("result").innerHTML = html;
+            } catch (error) {
+                document.getElementById("result").innerHTML = "エラーが発生しました。";
+                console.error(error);
+            }
+
+            myForm.reset();
         }
     </script>
 </body>
